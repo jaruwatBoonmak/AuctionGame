@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Auction Game</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            display: flex;
+            flex-direction: row;
+            align-items: flex-start;
+            justify-content: center;
+            height: 100vh;
+            background-color: #f0f0f0;
+        }
+        .auction-container {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            width: 80%;
+            max-width: 600px;
+        }
+        .item {
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+        .item img {
+            max-width: 100%;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+        .current-bid {
+            font-size: 20px;
+            color: #555;
+            margin-bottom: 20px;
+        }
+        .bid-form input[type="number"], .bid-form input[type="text"], .bid-form input[type="file"] {
+            width: calc(100% - 12px);
+            padding: 5px;
+            margin-bottom: 10px;
+        }
+        .bid-form input[type="submit"] {
+            padding: 10px;
+            font-size: 16px;
+            width: 100%;
+        }
+        .message {
+            margin-top: 20px;
+            font-size: 18px;
+        }
+        .history {
+            margin-top: 20px;
+            text-align: left;
+        }
+        .clear-history {
+            margin-top: 10px;
+            background-color: #d9534f;
+            color: white;
+            padding: 10px;
+            border: none;
+            cursor: pointer;
+            width: 100%;
+            font-size: 16px;
+        }
+        .highlight {
+            color: #d9534f;
+            font-weight: bold;
+        }
+        .sidebar {
+            width: 20%;
+            max-width: 300px;
+            margin-right: 20px;
+            margin-top: 50px;
+        }
+        .content {
+            width: 80%;
+            max-width: 600px;
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <div class="current-bid">Current Bid: $<span id="currentBid">0</span></div>
+        <div class="history" id="history"></div>
+        <button class="clear-history" onclick="clearHistory()">Clear History</button>
+    </div>
+    <div class="content">
+        <div class="auction-container">
+            <div class="item">
+                <img id="itemImage" src="https://via.placeholder.com/250" alt="Auction Item">
+                <div id="itemName">Auction Item: Antique Vase</div>
+            </div>
+            <form class="bid-form" onsubmit="placeBid(event)">
+                <input type="text" id="bidderName" placeholder="Your Name" required>
+                <input type="number" id="bidAmount" placeholder="Your Bid" required min="1">
+                <input type="submit" value="Place Bid">
+            </form>
+            <form class="bid-form" onsubmit="updateItem(event)">
+                <input type="text" id="newItemName" placeholder="New Item Name" required>
+                <input type="file" id="newItemImage" accept="image/*" required>
+                <input type="submit" value="Update Item">
+            </form>
+            <div class="message" id="message"></div>
+        </div>
+    </div>
+
+    <script>
+        let currentBid = 0;
+        const history = [];
+
+        function placeBid(event) {
+            event.preventDefault();
+            const bidderName = document.getElementById('bidderName').value;
+            const bidAmount = document.getElementById('bidAmount').value;
+            const messageElement = document.getElementById('message');
+            const historyElement = document.getElementById('history');
+
+            if (parseInt(bidAmount) > currentBid) {
+                currentBid = parseInt(bidAmount);
+                document.getElementById('currentBid').textContent = currentBid;
+                messageElement.textContent = "Bid placed successfully!";
+                messageElement.style.color = "green";
+
+                // Add to history
+                history.push({ name: bidderName, amount: currentBid });
+                updateHistory(historyElement);
+            } else {
+                messageElement.textContent = "Bid must be higher than the current bid.";
+                messageElement.style.color = "#d9534f";
+            }
+
+            document.getElementById('bidderName').value = '';
+            document.getElementById('bidAmount').value = '';
+        }
+
+        function updateHistory(historyElement) {
+            historyElement.innerHTML = '<h3>Bid History:</h3>';
+            history.forEach(entry => {
+                const div = document.createElement('div');
+                div.textContent = `${entry.name} bid $${entry.amount}`;
+                if (entry.amount === currentBid) {
+                    div.classList.add('highlight');
+                }
+                historyElement.appendChild(div);
+            });
+        }
+
+        function clearHistory() {
+            history.length = 0;
+            currentBid = 0;
+            document.getElementById('currentBid').textContent = currentBid;
+            document.getElementById('history').innerHTML = '';
+            document.getElementById('message').textContent = '';
+        }
+
+        function updateItem(event) {
+            event.preventDefault();
+            const newItemName = document.getElementById('newItemName').value;
+            const newItemImage = document.getElementById('newItemImage').files[0];
+
+            if (newItemImage) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('itemImage').src = e.target.result;
+                };
+                reader.readAsDataURL(newItemImage);
+            }
+
+            document.getElementById('itemName').textContent = `Auction Item: ${newItemName}`;
+
+            document.getElementById('newItemName').value = '';
+            document.getElementById('newItemImage').value = '';
+        }
+    </script>
+</body>
+</html>
